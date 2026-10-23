@@ -43,28 +43,61 @@
     </div>
   </header>
 
-  <!-- 轮播 / 推荐 Banner 占位 -->
+  <!-- 轮播 / 推荐 Banner -->
   <section class="hero" id="hero">
-    <div class="hero-slide active" style="--from:#1b1e28;--to:#2f4b7c;">
-      <h1>Nova Acoustic 声学系列</h1>
-      <p>主动降噪 · 45 小时续航 · 为专注而生</p>
-      <span class="hero-tag">NEW ARRIVAL</span>
+    <div class="hero-slide active" style="--from:#0e1118;--to:#2b3446;">
+      <div class="hero-copy">
+        <span class="hero-tag">NEW ARRIVAL</span>
+        <h1>Nova Acoustic 声学系列</h1>
+        <p>主动降噪 · 45 小时续航 · 为专注而生</p>
+        <a class="hero-cta" href="#products">
+          立即选购
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <path d="M5 12h14M13 6l6 6-6 6"></path>
+          </svg>
+        </a>
+      </div>
+      <div class="hero-media">
+        <img src="https://images.unsplash.com/photo-1580943863540-dda56dd7a430?auto=format&fit=crop&w=1200&q=80" alt="深色背景下的头戴式主动降噪耳机" loading="eager">
+      </div>
     </div>
-    <div class="hero-slide" style="--from:#171a21;--to:#3d5a45;">
-      <h1>NovaKey 机械键盘家族</h1>
-      <p>Gasket 结构 · 全键热插拔 · 麻将音手感</p>
-      <span class="hero-tag">HOT</span>
+    <div class="hero-slide" style="--from:#0d1116;--to:#233a3d;">
+      <div class="hero-copy">
+        <span class="hero-tag">HOT</span>
+        <h1>NovaKey 机械键盘家族</h1>
+        <p>Gasket 结构 · 全键热插拔 · 麻将音手感</p>
+        <a class="hero-cta" href="#products">
+          探索键盘
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <path d="M5 12h14M13 6l6 6-6 6"></path>
+          </svg>
+        </a>
+      </div>
+      <div class="hero-media">
+        <img src="https://images.unsplash.com/photo-1547394765-185e1e68f34e?auto=format&fit=crop&w=1200&q=80" alt="暗光下背光点亮的机械键盘特写" loading="eager">
+      </div>
     </div>
-    <div class="hero-slide" style="--from:#191b24;--to:#5c3a6e;">
-      <h1>NovaView 4K 视界</h1>
-      <p>27 英寸 4K IPS · 99% sRGB 高色域</p>
-      <span class="hero-tag">PRO</span>
+    <div class="hero-slide" style="--from:#120f18;--to:#392a52;">
+      <div class="hero-copy">
+        <span class="hero-tag">PRO</span>
+        <h1>NovaView 4K 视界</h1>
+        <p>27 英寸 4K IPS · 99% sRGB 高色域</p>
+        <a class="hero-cta" href="#products">
+          查看显示器
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <path d="M5 12h14M13 6l6 6-6 6"></path>
+          </svg>
+        </a>
+      </div>
+      <div class="hero-media">
+        <img src="https://images.unsplash.com/photo-1614624532983-4ce03382d63d?auto=format&fit=crop&w=1200&q=80" alt="氛围灯光下的桌面 4K 显示器" loading="eager">
+      </div>
     </div>
     <div class="hero-dots" id="heroDots"></div>
   </section>
 
   <!-- 商品列表 -->
-  <main class="container">
+  <main class="container" id="products">
     <section class="product-section">
       <div class="section-head">
         <h2 id="sectionTitle">为你推荐</h2>
@@ -75,13 +108,13 @@
         <p>没有找到相关商品，换个关键词试试？</p>
       </div>
       <div class="error-state" id="errorState" hidden>
-        <p>无法连接服务器，请确认后端服务已启动（npm start）。</p>
+        <p>无法连接服务器，请确认后端已启动且数据库已初始化（见 README「本地启动指南」）。</p>
       </div>
     </section>
   </main>
 
   <footer class="footer">
-    <p>Nova 商城 · 前端面试考核 Demo · 数据来自 Node.js + MySQL</p>
+    <p>Nova 商城 · 前端面试考核 Demo · 数据来自 Node.js + SQLite</p>
   </footer>
 
   <!-- 侧拉式购物车 -->
@@ -105,6 +138,7 @@
     </div>
   </aside>
 
+  <script src="cart.js"></script>
   <script src="main.js"></script>
 </body>
 </html>

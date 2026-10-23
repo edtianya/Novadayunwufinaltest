@@ -1,60 +1,197 @@
-const express = require('express');
-const cors = require('cors');
+const path = require("path");
+const express = require("express");
+const cors = require("cors");
+const { db, dbFile } = require("./db");
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = Number(process.env.PORT) || 3000;
 
 app.use(cors());
 app.use(express.json());
 
-// 模拟数据：后续替换为 MySQL 查询（数据库脚本见 init.sql）
-const mockProducts = [
-  { id: 1, name: 'NovaBeat Q45 头戴式主动降噪耳机', price: 899.0, category: '耳机', image_url: 'https://images.unsplash.com/photo-1583394838336-acd977736f90?auto=format&fit=crop&w=600&q=80', description: '自适应主动降噪，45 小时超长续航。', stock: 120 },
-  { id: 2, name: 'NovaBeat Air 真无线降噪耳机', price: 399.0, category: '耳机', image_url: 'https://images.unsplash.com/photo-1606220588913-b3aacb4d2f46?auto=format&fit=crop&w=600&q=80', description: '蓝牙 5.4 低延迟连接，通话三麦克风降噪。', stock: 200 },
-  { id: 5, name: 'NovaKey K87 机械键盘（Gasket 结构）', price: 349.0, category: '键盘', image_url: 'https://images.unsplash.com/photo-1618384887929-16ec33fab9ef?auto=format&fit=crop&w=600&q=80', description: 'Gasket 全键无冲，五层填充消音。', stock: 150 },
-  { id: 9, name: 'NovaLight L1 AA 级护眼台灯', price: 199.0, category: '台灯', image_url: 'https://images.unsplash.com/photo-1774647001992-b711ae72f83d?auto=format&fit=crop&w=600&q=80', description: '国 AA 级照度，无频闪无蓝光危害。', stock: 220 },
-  { id: 12, name: 'NovaGlide M1 无线静音鼠标', price: 89.0, category: '鼠标', image_url: 'https://images.unsplash.com/photo-1527864550417-7fd91fc51a46?auto=format&fit=crop&w=600&q=80', description: '静音微动不扰人，18 个月超长电池续航。', stock: 400 },
-  { id: 18, name: 'NovaView V27 27 英寸 4K 显示器', price: 1899.0, category: '显示器', image_url: 'https://images.unsplash.com/photo-1666771410140-0573b232426e?auto=format&fit=crop&w=600&q=80', description: '27 英寸 4K IPS 面板，Type-C 65W 反向供电。', stock: 75 }
-];
+// GET /api/health  健康检查
+app.get("/api/health", (req, res) => {
+  try {
+    db.prepare("SELECT 1 AS ok").get();
+    res.json({ code: 0, data: { status: "ok", database: "sqlite" } });
+  } catch (err) {
+    console.error("[health] SQLite 检查失败：", err);
+    res.status(503).json({ code: 503, message: "SQLite 数据库不可用" });
+  }
+});
 
 // GET /api/products?keyword=&category=  商品列表
-app.get('/api/products', (req, res) => {
-  const { keyword = '', category = '' } = req.query;
-  let list = mockProducts;
-  if (category) {
-    list = list.filter((p) => p.category === category);
+app.get("/api/products", (req, res, next) => {
+  try {
+    const keyword = String(req.query.keyword ?? "").trim();
+    const category = String(req.query.category ?? "").trim();
+    const conditions = [];
+    const params = [];
+
+    if (keyword) {
+      conditions.push("(name LIKE ? OR description LIKE ?)");
+      params.push(`%${keyword}%`, `%${keyword}%`);
+    }
+    if (category) {
+      conditions.push("category = ?");
+      params.push(category);
+    }
+
+    const where = conditions.length ? `WHERE ${conditions.join(" AND ")}` : "";
+    const rows = db
+      .prepare(
+        `SELECT id, name, price, category, image_url, description, stock
+         FROM products
+         ${where}
+         ORDER BY id ASC`
+      )
+      .all(...params);
+
+    res.json({ code: 0, data: rows });
+  } catch (err) {
+    next(err);
   }
-  if (keyword) {
-    list = list.filter((p) => p.name.includes(keyword) || (p.description || '').includes(keyword));
-  }
-  res.json({ code: 0, data: list });
 });
 
 // GET /api/products/:id  商品详情
-app.get('/api/products/:id', (req, res) => {
-  const product = mockProducts.find((p) => p.id === Number(req.params.id));
-  if (!product) {
-    return res.status(404).json({ code: 404, message: '商品不存在' });
+app.get("/api/products/:id", (req, res, next) => {
+  const id = Number(req.params.id);
+  if (!Number.isInteger(id) || id <= 0) {
+    return res.status(400).json({ code: 400, message: "商品 ID 不合法" });
   }
-  res.json({ code: 0, data: product });
+
+  try {
+    const row = db
+      .prepare(
+        `SELECT id, name, price, category, image_url, description, stock
+         FROM products WHERE id = ?`
+      )
+      .get(id);
+
+    if (!row) {
+      return res.status(404).json({ code: 404, message: "商品不存在" });
+    }
+    res.json({ code: 0, data: row });
+  } catch (err) {
+    next(err);
+  }
 });
 
-// POST /api/orders  创建订单
-app.post('/api/orders', (req, res) => {
-  const { items, total_price, receiver } = req.body || {};
-  // TODO: 校验 items 与收货信息 -> 写库 orders 表 -> 扣减库存
-  const orderNo = 'NOVA' + Date.now();
-  res.status(201).json({
-    code: 0,
-    data: {
-      order_no: orderNo,
-      total_price: total_price || 0,
-      status: 'pending',
-      receiver: receiver || null
+// POST /api/orders  创建订单（服务端计价，事务内校验并扣减库存）
+app.post("/api/orders", (req, res, next) => {
+  const { items, receiver } = req.body || {};
+
+  if (!Array.isArray(items) || items.length === 0) {
+    return res.status(400).json({ code: 400, message: "订单商品不能为空" });
+  }
+
+  const merged = new Map();
+  for (const raw of items) {
+    const id = Number(raw?.id);
+    const qty = Number(raw?.qty);
+    if (!Number.isInteger(id) || id <= 0 || !Number.isInteger(qty) || qty <= 0) {
+      return res.status(400).json({ code: 400, message: "商品参数不合法" });
     }
+    merged.set(id, (merged.get(id) || 0) + qty);
+  }
+
+  const entries = [...merged.entries()].sort((a, b) => a[0] - b[0]);
+  const receiverInfo =
+    receiver && typeof receiver === "object"
+      ? {
+          name: String(receiver.name ?? "").trim(),
+          phone: String(receiver.phone ?? "").trim(),
+          address: String(receiver.address ?? "").trim(),
+        }
+      : null;
+
+  const rollback = () => {
+    try {
+      db.exec("ROLLBACK");
+    } catch (err) {
+      // 没有活动事务时忽略
+    }
+  };
+
+  try {
+    db.exec("BEGIN IMMEDIATE");
+
+    const ids = entries.map(([id]) => id);
+    const placeholders = ids.map(() => "?").join(", ");
+    const products = db
+      .prepare(`SELECT id, name, price, stock FROM products WHERE id IN (${placeholders})`)
+      .all(...ids);
+    const productMap = new Map(products.map((p) => [p.id, p]));
+
+    let totalPrice = 0;
+    for (const [id, qty] of entries) {
+      const product = productMap.get(id);
+      if (!product) {
+        rollback();
+        return res.status(404).json({ code: 404, message: `商品 ${id} 不存在或已下架` });
+      }
+      if (product.stock < qty) {
+        rollback();
+        return res.status(409).json({ code: 409, message: `「${product.name}」库存不足` });
+      }
+      totalPrice += Number(product.price) * qty;
+    }
+    totalPrice = Math.round(totalPrice * 100) / 100;
+
+    const orderNo = `NOVA${Date.now()}${String(Math.floor(Math.random() * 10000)).padStart(4, "0")}`;
+    const status = "pending";
+
+    db.prepare(
+      `INSERT INTO orders
+         (order_no, total_price, status, receiver_name, receiver_phone, receiver_address)
+       VALUES (?, ?, ?, ?, ?, ?)`
+    ).run(
+      orderNo,
+      totalPrice,
+      status,
+      receiverInfo?.name || null,
+      receiverInfo?.phone || null,
+      receiverInfo?.address || null
+    );
+
+    const updateStock = db.prepare("UPDATE products SET stock = stock - ? WHERE id = ?");
+    for (const [id, qty] of entries) {
+      updateStock.run(qty, id);
+    }
+
+    db.exec("COMMIT");
+
+    res.status(201).json({
+      code: 0,
+      message: "下单成功",
+      data: { order_no: orderNo, total_price: totalPrice, status },
+    });
+  } catch (err) {
+    rollback();
+    next(err);
+  }
+});
+
+app.use("/api", (req, res) => {
+  res.status(404).json({ code: 404, message: "接口不存在" });
+});
+
+// 后端同时托管前端静态页面，启动后可直接访问 http://localhost:3000
+app.use(express.static(path.join(__dirname, "..", "front")));
+
+app.use((err, req, res, next) => {
+  console.error("[server] 请求处理失败：", err);
+  res.status(500).json({
+    code: 500,
+    message: "服务器内部错误，请查看后端终端日志",
   });
 });
 
 app.listen(PORT, () => {
+  const productCount = Number(
+    db.prepare("SELECT COUNT(*) AS count FROM products").get().count
+  );
   console.log(`Nova API server running at http://localhost:${PORT}`);
+  console.log(`Frontend: http://localhost:${PORT}/`);
+  console.log(`SQLite: ${dbFile}（${productCount} 个商品）`);
 });

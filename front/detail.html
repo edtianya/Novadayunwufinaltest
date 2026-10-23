@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>商品详情 — Nova 商城</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="detail.css">
+</head>
+<body>
+
+  <!-- 顶部导航栏（与首页保持一致） -->
+  <header class="navbar">
+    <div class="nav-inner">
+      <a class="logo" href="index.html">Nova</a>
+
+      <nav class="nav-links" id="detailNavLinks">
+        <a href="index.html">全部</a>
+        <a href="index.html?category=耳机" data-category="耳机">耳机</a>
+        <a href="index.html?category=键盘" data-category="键盘">键盘</a>
+        <a href="index.html?category=台灯" data-category="台灯">台灯</a>
+        <a href="index.html?category=鼠标" data-category="鼠标">鼠标</a>
+        <a href="index.html?category=音箱" data-category="音箱">音箱</a>
+      </nav>
+
+      <div class="nav-actions">
+        <div class="search-box">
+          <svg class="search-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="7"></circle>
+            <path d="M21 21l-4.35-4.35"></path>
+          </svg>
+          <input type="search" id="detailSearchInput" placeholder="搜索商品…" autocomplete="off">
+        </div>
+
+        <button class="cart-btn" id="cartOpenBtn" aria-label="打开购物车">
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8">
+            <circle cx="9" cy="20" r="1.6"></circle>
+            <circle cx="17" cy="20" r="1.6"></circle>
+            <path d="M3 3h2l2.4 12.2a1 1 0 0 0 1 .8h7.9a1 1 0 0 0 1-.8L19 7H6"></path>
+          </svg>
+          <span class="cart-badge" id="navCartBadge">0</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <!-- 第一屏：左图右文 -->
+    <section class="pd-hero" id="detailHero" aria-busy="true">
+      <div class="pd-gallery">
+        <div class="pd-media" id="detailMedia">
+          <img id="detailImage" src="" alt="商品图片">
+          <span class="pd-media-note">OFFICIAL · NOVA SELECT</span>
+        </div>
+      </div>
+
+      <div class="pd-summary">
+        <nav class="pd-breadcrumb" aria-label="面包屑导航">
+          <a href="index.html">首页</a>
+          <span aria-hidden="true">/</span>
+          <a href="index.html" id="breadcrumbCategory">全部商品</a>
+          <span aria-hidden="true">/</span>
+          <span id="breadcrumbName">商品详情</span>
+        </nav>
+
+        <span class="pd-cat" id="detailCategory">加载中</span>
+        <h1 class="pd-title" id="detailName">正在加载商品…</h1>
+        <p class="pd-tagline" id="detailTagline">Nova 官方正品 · 精选科技好物</p>
+
+        <div class="pd-price-row">
+          <span class="pd-price" id="detailPrice">--</span>
+          <span class="pd-price-note">含税价 · 顺丰包邮</span>
+        </div>
+
+        <div class="pd-stock-row">
+          <span class="pd-stock" id="detailStock">读取库存中…</span>
+          <span class="pd-stock-note">库存实时同步</span>
+        </div>
+
+        <ul class="pd-service-list">
+          <li>7 天无理由退换</li>
+          <li>一年官方质保</li>
+          <li>48 小时内发货</li>
+        </ul>
+
+        <button class="pd-add-btn" id="detailAddBtn" disabled>
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+            <circle cx="9" cy="20" r="1.6"></circle>
+            <circle cx="17" cy="20" r="1.6"></circle>
+            <path d="M3 3h2l2.4 12.2a1 1 0 0 0 1 .8h7.9a1 1 0 0 0 1-.8L19 7H6"></path>
+          </svg>
+          <span id="detailAddText">加入购物车</span>
+        </button>
+
+        <p class="pd-purchase-note">支持微信 / 支付宝支付 · 由 Nova 官方发货</p>
+      </div>
+    </section>
+
+    <!-- 第二屏起：可滚动的详细介绍与规格参数 -->
+    <section class="pd-content" id="detailContent" hidden>
+      <div class="pd-content-inner">
+        <article class="pd-story">
+          <p class="pd-eyebrow">PRODUCT STORY</p>
+          <h2>商品详细介绍</h2>
+          <p class="pd-story-sub">从核心参数到日常体验，了解这件产品的每一处细节。</p>
+
+          <div class="pd-desc" id="detailDesc"></div>
+
+          <figure class="pd-editorial">
+            <img id="detailEditorialImage" src="" alt="" loading="lazy">
+            <figcaption>
+              <span id="editorialCaption">Nova 精选科技好物</span>
+              <span>Designed for everyday focus.</span>
+            </figcaption>
+          </figure>
+
+          <blockquote class="pd-quote">
+            <p>“把复杂的参数藏进细节，把可靠的体验交给每一天。”</p>
+            <cite>Nova Product Team</cite>
+          </blockquote>
+        </article>
+
+        <aside class="pd-side">
+          <section class="pd-spec-card">
+            <p class="pd-eyebrow">SPECIFICATIONS</p>
+            <h2>规格参数</h2>
+            <dl class="pd-spec-grid" id="specGrid"></dl>
+          </section>
+
+          <section class="pd-service-card">
+            <p class="pd-eyebrow">SERVICE</p>
+            <h2>服务保障</h2>
+            <div class="pd-service-grid">
+              <div>
+                <strong>顺丰包邮</strong>
+                <span>全国大部分地区 48 小时内发出</span>
+              </div>
+              <div>
+                <strong>7 天无理由</strong>
+                <span>不影响二次销售即可申请退换</span>
+              </div>
+              <div>
+                <strong>一年质保</strong>
+                <span>非人为损坏享官方保修服务</span>
+              </div>
+              <div>
+                <strong>官方正品</strong>
+                <span>Nova 官方直营，支持查验</span>
+              </div>
+            </div>
+          </section>
+        </aside>
+      </div>
+    </section>
+
+    <!-- 加载失败 / 商品不存在 -->
+    <section class="pd-error" id="detailError" hidden>
+      <p class="pd-eyebrow">PRODUCT UNAVAILABLE</p>
+      <h1>这件商品暂时不可用</h1>
+      <p id="detailErrorText">请从商品列表重新进入。</p>
+      <a class="pd-back-btn" href="index.html">返回商品列表</a>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <p>Nova 商城 · 前端面试考核 Demo · 数据来自 Node.js + SQLite</p>
+  </footer>
+
+  <!-- 侧拉式购物车（与首页共用 cart.js） -->
+  <div class="cart-mask" id="cartMask"></div>
+  <aside class="cart-drawer" id="cartDrawer" aria-label="购物车">
+    <div class="cart-header">
+      <h2>购物车 <span class="cart-count" id="drawerCartCount">0</span></h2>
+      <button class="cart-close" id="cartCloseBtn" aria-label="关闭购物车">&times;</button>
+    </div>
+
+    <div class="cart-body" id="cartItems">
+      <!-- 购物车条目由 cart.js 动态渲染 -->
+    </div>
+
+    <div class="cart-footer">
+      <div class="cart-total-row">
+        <span>合计</span>
+        <strong class="cart-total" id="cartTotal">¥0.00</strong>
+      </div>
+      <button class="checkout-btn" id="checkoutBtn">去结算</button>
+    </div>
+  </aside>
+
+  <script src="cart.js"></script>
+  <script src="detail.js"></script>
+</body>
+</html>

@@ -1,0 +1,727 @@
+/* ============ Nova 商品详情页 ============ */
+main {
+  background: var(--surface);
+}
+
+/* ---------- 第一屏：左图右文 ---------- */
+.pd-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1.08fr) minmax(0, 0.92fr);
+  align-items: center;
+  gap: 64px;
+  max-width: 1440px;
+  min-height: calc(100vh - 64px);
+  margin: 0 auto;
+  padding: 48px 32px 72px;
+}
+
+.pd-hero[hidden],
+.pd-content[hidden],
+.pd-error[hidden] {
+  display: none;
+}
+
+.pd-gallery {
+  min-width: 0;
+}
+
+.pd-media {
+  position: relative;
+  height: clamp(400px, 64vh, 660px);
+  border-radius: 26px;
+  overflow: hidden;
+  background: #eef0f3;
+  box-shadow: 0 24px 60px rgba(17, 24, 39, 0.14);
+  isolation: isolate;
+}
+
+.pd-media::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background: linear-gradient(110deg, transparent 24%, rgba(255, 255, 255, 0.42) 50%, transparent 76%);
+  transform: translateX(-100%);
+  animation: pd-shimmer 1.8s ease-in-out infinite;
+}
+
+.pd-media.loaded::before {
+  display: none;
+}
+
+.pd-media img {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  transition: transform 0.7s ease;
+}
+
+.pd-media:hover img {
+  transform: scale(1.03);
+}
+
+.pd-media::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background: linear-gradient(180deg, transparent 62%, rgba(8, 10, 15, 0.34) 100%);
+}
+
+.pd-media-note {
+  position: absolute;
+  left: 24px;
+  bottom: 24px;
+  z-index: 2;
+  padding: 7px 13px;
+  border-radius: 999px;
+  background: rgba(15, 18, 25, 0.58);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  color: #fff;
+  font-size: 11px;
+  letter-spacing: 1.4px;
+}
+
+.pd-summary {
+  max-width: 560px;
+}
+
+.pd-breadcrumb {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 26px;
+  color: var(--text-secondary);
+  font-size: 12px;
+}
+
+.pd-breadcrumb a {
+  color: var(--text-secondary);
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.pd-breadcrumb a:hover {
+  color: var(--accent);
+}
+
+.pd-breadcrumb span:last-child {
+  max-width: 230px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  color: var(--text);
+}
+
+.pd-cat {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 12px;
+  border-radius: 999px;
+  background: rgba(47, 107, 255, 0.08);
+  color: var(--accent);
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.pd-title {
+  margin: 16px 0 12px;
+  font-size: 42px;
+  line-height: 1.22;
+  letter-spacing: 0.2px;
+}
+
+.pd-tagline {
+  color: var(--text-secondary);
+  font-size: 15px;
+  line-height: 1.8;
+}
+
+.pd-price-row {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 14px;
+  margin: 30px 0 18px;
+}
+
+.pd-price {
+  color: var(--price);
+  font-size: 44px;
+  font-weight: 800;
+  line-height: 1.1;
+}
+
+.pd-price::before {
+  content: "¥";
+  margin-right: 3px;
+  font-size: 22px;
+  font-weight: 700;
+}
+
+.pd-price-note {
+  color: var(--text-secondary);
+  font-size: 12px;
+}
+
+.pd-stock-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 14px;
+  margin-bottom: 24px;
+}
+
+.pd-stock {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: #ecfdf3;
+  color: #15803d;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.pd-stock::before {
+  content: "";
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.pd-stock.low {
+  background: #fffbeb;
+  color: #b45309;
+}
+
+.pd-stock.out {
+  background: #fef2f2;
+  color: #b91c1c;
+}
+
+.pd-stock-note {
+  color: var(--text-secondary);
+  font-size: 12px;
+}
+
+.pd-service-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 20px;
+  margin: 0 0 32px;
+  padding: 20px 0;
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  list-style: none;
+  color: #4b5563;
+  font-size: 13px;
+}
+
+.pd-service-list li {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.pd-service-list li::before {
+  content: "✓";
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: rgba(47, 107, 255, 0.1);
+  color: var(--accent);
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.pd-add-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  height: 62px;
+  border-radius: 999px;
+  background: linear-gradient(120deg, #2f6bff, #5b8cff);
+  color: #fff;
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: 0.4px;
+  box-shadow: 0 14px 32px rgba(47, 107, 255, 0.3);
+  transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease;
+}
+
+.pd-add-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 18px 38px rgba(47, 107, 255, 0.38);
+  filter: brightness(1.03);
+}
+
+.pd-add-btn:active:not(:disabled) {
+  transform: scale(0.985);
+}
+
+.pd-add-btn:disabled {
+  background: #c7cbd4;
+  box-shadow: none;
+  cursor: not-allowed;
+}
+
+.pd-purchase-note {
+  margin-top: 14px;
+  color: var(--text-secondary);
+  font-size: 12px;
+  text-align: center;
+}
+
+/* ---------- 第二屏起：图文详情 ---------- */
+.pd-content {
+  padding: 88px 32px 100px;
+  background: #eef0f4;
+  border-top: 1px solid var(--border);
+}
+
+.pd-content-inner {
+  display: grid;
+  grid-template-columns: minmax(0, 1.55fr) minmax(320px, 0.75fr);
+  align-items: start;
+  gap: 56px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.pd-story {
+  min-width: 0;
+}
+
+.pd-eyebrow {
+  margin-bottom: 8px;
+  color: var(--accent);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 2.4px;
+}
+
+.pd-story h2,
+.pd-spec-card h2,
+.pd-service-card h2 {
+  font-size: 28px;
+  line-height: 1.3;
+}
+
+.pd-story-sub {
+  margin-top: 10px;
+  color: var(--text-secondary);
+  font-size: 14px;
+}
+
+.pd-desc {
+  margin-top: 26px;
+}
+
+.pd-desc p {
+  margin-bottom: 16px;
+  color: #4b5563;
+  font-size: 16px;
+  line-height: 2;
+}
+
+.pd-desc p:first-child {
+  color: var(--text);
+  font-size: 19px;
+  line-height: 1.9;
+}
+
+.pd-feature-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin: 30px 0 8px;
+  padding: 0;
+  list-style: none;
+}
+
+.pd-feature-list li {
+  position: relative;
+  padding: 14px 16px 14px 40px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface);
+  color: #374151;
+  font-size: 14px;
+  line-height: 1.65;
+}
+
+.pd-feature-list li::before {
+  content: "✓";
+  position: absolute;
+  top: 13px;
+  left: 15px;
+  color: var(--accent);
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.pd-editorial {
+  position: relative;
+  margin: 46px 0;
+  border-radius: 22px;
+  overflow: hidden;
+  background: #0e1118;
+}
+
+.pd-editorial img {
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  object-fit: cover;
+}
+
+.pd-editorial figcaption {
+  position: absolute;
+  inset: auto 0 0;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 64px 28px 24px;
+  background: linear-gradient(180deg, transparent, rgba(6, 8, 12, 0.82));
+  color: rgba(255, 255, 255, 0.78);
+  font-size: 12px;
+  letter-spacing: 0.4px;
+}
+
+.pd-editorial figcaption span:first-child {
+  color: #fff;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.pd-quote {
+  margin: 52px 0 0;
+  padding: 8px 0 8px 26px;
+  border-left: 3px solid var(--accent);
+}
+
+.pd-quote p {
+  color: var(--text);
+  font-size: 20px;
+  line-height: 1.75;
+}
+
+.pd-quote cite {
+  display: block;
+  margin-top: 12px;
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-style: normal;
+  letter-spacing: 0.6px;
+}
+
+.pd-side {
+  position: sticky;
+  top: 88px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.pd-spec-card,
+.pd-service-card {
+  padding: 30px;
+  border-radius: 20px;
+  background: var(--surface);
+  box-shadow: var(--shadow-card);
+}
+
+.pd-spec-card h2,
+.pd-service-card h2 {
+  font-size: 22px;
+}
+
+.pd-spec-grid {
+  margin: 20px 0 0;
+}
+
+.pd-spec-grid > div {
+  display: grid;
+  grid-template-columns: 84px minmax(0, 1fr);
+  gap: 14px;
+  padding: 13px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.pd-spec-grid > div:last-child {
+  padding-bottom: 0;
+  border-bottom: none;
+}
+
+.pd-spec-grid dt {
+  color: var(--text-secondary);
+  font-size: 13px;
+}
+
+.pd-spec-grid dd {
+  margin: 0;
+  color: var(--text);
+  font-size: 14px;
+  line-height: 1.65;
+  word-break: break-word;
+}
+
+.pd-service-grid {
+  margin-top: 14px;
+}
+
+.pd-service-grid > div {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.pd-service-grid > div:last-child {
+  padding-bottom: 0;
+  border-bottom: none;
+}
+
+.pd-service-grid strong {
+  font-size: 14px;
+}
+
+.pd-service-grid span {
+  color: var(--text-secondary);
+  font-size: 12px;
+  line-height: 1.65;
+}
+
+/* ---------- 加载失败 ---------- */
+.pd-error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: calc(100vh - 64px);
+  padding: 80px 24px;
+  text-align: center;
+}
+
+.pd-error h1 {
+  margin: 8px 0 12px;
+  font-size: 36px;
+}
+
+.pd-error p:not(.pd-eyebrow) {
+  max-width: 480px;
+  color: var(--text-secondary);
+  font-size: 15px;
+}
+
+.pd-back-btn {
+  display: inline-flex;
+  align-items: center;
+  margin-top: 30px;
+  padding: 12px 30px;
+  border-radius: 999px;
+  background: var(--accent);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.pd-back-btn:hover {
+  background: var(--accent-dark);
+  transform: translateY(-2px);
+}
+
+@keyframes pd-shimmer {
+  to {
+    transform: translateX(100%);
+  }
+}
+
+/* ---------- 响应式 ---------- */
+@media (max-width: 1200px) {
+  .pd-hero {
+    gap: 40px;
+  }
+
+  .pd-title {
+    font-size: 36px;
+  }
+
+  .pd-media {
+    height: clamp(380px, 58vh, 600px);
+  }
+
+  .pd-content-inner {
+    gap: 40px;
+  }
+}
+
+@media (max-width: 1024px) {
+  .pd-hero {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 0.9fr);
+    gap: 32px;
+    padding: 40px 32px 56px;
+  }
+
+  .pd-media {
+    height: clamp(340px, 52vh, 520px);
+  }
+
+  .pd-title {
+    font-size: 32px;
+  }
+
+  .pd-price {
+    font-size: 38px;
+  }
+
+  .pd-content-inner {
+    grid-template-columns: minmax(0, 1.4fr) minmax(300px, 0.8fr);
+  }
+}
+
+@media (max-width: 900px) {
+  .pd-hero {
+    grid-template-columns: 1fr;
+    min-height: 0;
+    gap: 36px;
+    padding: 32px 32px 56px;
+  }
+
+  .pd-media {
+    height: clamp(320px, 55vh, 520px);
+  }
+
+  .pd-summary {
+    max-width: 720px;
+  }
+
+  .pd-content {
+    padding: 64px 32px 80px;
+  }
+
+  .pd-content-inner {
+    grid-template-columns: 1fr;
+    gap: 40px;
+  }
+
+  .pd-side {
+    position: static;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 24px;
+    align-items: start;
+  }
+}
+
+@media (max-width: 768px) {
+  .pd-hero {
+    padding: 24px 20px 48px;
+  }
+
+  .pd-media {
+    height: 360px;
+    border-radius: 20px;
+  }
+
+  .pd-title {
+    font-size: 28px;
+  }
+
+  .pd-price {
+    font-size: 34px;
+  }
+
+  .pd-content {
+    padding: 52px 20px 64px;
+  }
+
+  .pd-side {
+    grid-template-columns: 1fr;
+  }
+
+  .pd-feature-list {
+    grid-template-columns: 1fr;
+  }
+
+  .pd-editorial {
+    margin: 32px 0;
+  }
+
+  .pd-story h2 {
+    font-size: 24px;
+  }
+
+  .pd-quote p {
+    font-size: 18px;
+  }
+}
+
+@media (max-width: 480px) {
+  .pd-media {
+    height: 300px;
+  }
+
+  .pd-breadcrumb {
+    font-size: 11px;
+  }
+
+  .pd-title {
+    font-size: 24px;
+  }
+
+  .pd-price {
+    font-size: 30px;
+  }
+
+  .pd-add-btn {
+    height: 56px;
+    font-size: 16px;
+  }
+
+  .pd-content {
+    padding: 44px 16px 56px;
+  }
+
+  .pd-spec-card,
+  .pd-service-card {
+    padding: 22px;
+    border-radius: 16px;
+  }
+
+  .pd-editorial figcaption {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+    padding: 44px 18px 16px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pd-media::before {
+    animation: none;
+  }
+
+  .pd-media img,
+  .pd-add-btn,
+  .pd-back-btn {
+    transition: none;
+  }
+}

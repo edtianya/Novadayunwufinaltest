@@ -1,32 +1,21 @@
-/* Nova 商城 · 页面逻辑
- * 商品首选后端 API；后端未启动时回退到 MOCK_PRODUCTS 本地预览
- * 考核要求「商品不能硬编码在前端」：联调完成后删除 MOCK_PRODUCTS 及 loadAndRender 中的兜底分支
+/* Nova 商城 · 首页逻辑
+ * 商品数据来自 GET /api/products；购物车由 cart.js 统一管理并在页面间共享。
  */
-const API_BASE = "http://localhost:3000/api";
+const API_BASE = "/api";
 
 const state = {
   products: [],
-  cart: new Map(), // productId -> { product, qty }
 };
-
-/* ---------- 本地预览数据（临时，联调后删除） ----------
- * 仅在后端未启动时兜底渲染，让页面可以独立预览；
- * 字段名与数据库 products 表保持一致。
- * 商品图来自 Unsplash（Unsplash License，免费可商用）
- */
-const MOCK_PRODUCTS = [
-  { id: 1, name: "NovaBeat Q45 头戴式主动降噪耳机", price: 899, category: "耳机", image_url: "https://images.unsplash.com/photo-1583394838336-acd977736f90?auto=format&fit=crop&w=600&q=80", description: "自适应主动降噪，45 小时超长续航。", stock: 120 },
-  { id: 2, name: "NovaBeat Air 真无线降噪耳机", price: 399, category: "耳机", image_url: "https://images.unsplash.com/photo-1606220588913-b3aacb4d2f46?auto=format&fit=crop&w=600&q=80", description: "蓝牙 5.4 低延迟连接，通话三麦克风降噪。", stock: 200 },
-  { id: 5, name: "NovaKey K87 机械键盘（Gasket 结构）", price: 349, category: "键盘", image_url: "https://images.unsplash.com/photo-1618384887929-16ec33fab9ef?auto=format&fit=crop&w=600&q=80", description: "Gasket 全键无冲，五层填充消音。", stock: 150 },
-  { id: 9, name: "NovaLight L1 AA 级护眼台灯", price: 199, category: "台灯", image_url: "https://images.unsplash.com/photo-1774647001992-b711ae72f83d?auto=format&fit=crop&w=600&q=80", description: "国 AA 级照度，无频闪无蓝光危害。", stock: 220 },
-  { id: 12, name: "NovaGlide M1 无线静音鼠标", price: 89, category: "鼠标", image_url: "https://images.unsplash.com/photo-1527864550417-7fd91fc51a46?auto=format&fit=crop&w=600&q=80", description: "静音微动不扰人，18 个月超长电池续航。", stock: 400 },
-  { id: 18, name: "NovaView V27 27 英寸 4K 显示器", price: 1899, category: "显示器", image_url: "https://images.unsplash.com/photo-1666771410140-0573b232426e?auto=format&fit=crop&w=600&q=80", description: "27 英寸 4K IPS 面板，Type-C 65W 反向供电。", stock: 75 },
-];
 
 /* ---------- 工具 ---------- */
 const $ = (sel) => document.querySelector(sel);
 
-// 图片加载失败时的本地兜底（SVG 渐变占位图），保证离线演示可用
+function escapeHtml(value) {
+  const map = { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" };
+  return String(value ?? "").replace(/[&<>"']/g, (ch) => map[ch]);
+}
+
+// 图片加载失败时的本地兜底（SVG 渐变占位图），保证演示不出现破图
 function placeholderImg(text) {
   const svg =
     `<svg xmlns="http://www.w3.org/2000/svg" width="600" height="600">` +
@@ -39,8 +28,14 @@ function placeholderImg(text) {
   return "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svg);
 }
 
-function formatPrice(n) {
-  return "¥" + Number(n).toFixed(2);
+function bindImageFallback(img, category) {
+  img.addEventListener(
+    "error",
+    () => {
+      img.src = placeholderImg(category || "Nova");
+    },
+    { once: true }
+  );
 }
 
 /* ---------- 商品：获取与渲染 ---------- */
@@ -50,166 +45,55 @@ async function fetchProducts({ keyword = "", category = "" } = {}) {
   if (category) params.set("category", category);
 
   const res = await fetch(`${API_BASE}/products?${params.toString()}`);
-  if (!res.ok) throw new Error(`HTTP ${res.status}`);
-  const body = await res.json();
-  return body.data || [];
+  const body = await res.json().catch(() => ({}));
+  if (!res.ok || body.code !== 0) {
+    throw new Error(body.message || `HTTP ${res.status}`);
+  }
+  return Array.isArray(body.data) ? body.data : [];
 }
 
 function renderProducts(list) {
   const grid = $("#productGrid");
-  const empty = $("#emptyState");
   grid.innerHTML = "";
-  empty.hidden = list.length > 0;
 
   list.forEach((p) => {
     const card = document.createElement("div");
     card.className = "product-card";
+    card.dataset.id = String(p.id);
     card.innerHTML = `
-      <div class="thumb">
-        <img src="${p.image_url}" alt="${p.name}" loading="lazy"
-             onerror="this.onerror=null;this.src=placeholderImg('${p.category}')">
-      </div>
+      <button class="thumb" type="button" aria-label="查看 ${escapeHtml(p.name)} 详情">
+        <img src="${escapeHtml(p.image_url)}" alt="${escapeHtml(p.name)}" loading="lazy">
+      </button>
       <div class="info">
-        <span class="cat">${p.category}</span>
-        <div class="name" title="${p.name}">${p.name}</div>
-        <div class="desc">${p.description || ""}</div>
+        <span class="cat">${escapeHtml(p.category)}</span>
+        <button class="name" type="button" title="${escapeHtml(p.name)}">${escapeHtml(p.name)}</button>
+        <div class="desc">${escapeHtml(p.description || "")}</div>
         <div class="row">
           <span class="price">${Number(p.price).toFixed(2)}</span>
-          <button class="add-btn" data-id="${p.id}">加入购物车</button>
+          <button class="add-btn" data-id="${Number(p.id)}">加入购物车</button>
         </div>
       </div>`;
+    bindImageFallback(card.querySelector("img"), p.category);
     grid.appendChild(card);
   });
 }
 
 async function loadAndRender({ keyword = "", category = "" } = {}) {
+  $("#sectionSub").textContent = "正在加载商品…";
+  $("#emptyState").hidden = true;
+  $("#errorState").hidden = true;
+
   try {
     state.products = await fetchProducts({ keyword, category });
+    renderProducts(state.products);
+    $("#emptyState").hidden = state.products.length > 0;
     $("#sectionSub").textContent = "精选科技好物";
   } catch (err) {
-    // 后端未启动：回退到本地预览数据（联调后删除本分支）
-    console.warn("后端未连接，回退到本地预览数据：", err.message);
-    state.products = MOCK_PRODUCTS.filter(
-      (p) =>
-        (!category || p.category === category) &&
-        (!keyword || p.name.includes(keyword) || (p.description || "").includes(keyword))
-    );
-    $("#sectionSub").textContent = "后端未连接 · 当前为本地预览数据";
-  }
-  renderProducts(state.products);
-}
-
-/* ---------- 侧拉购物车 ---------- */
-function openCart() {
-  $("#cartDrawer").classList.add("open");
-  $("#cartMask").classList.add("open");
-}
-
-function closeCart() {
-  $("#cartDrawer").classList.remove("open");
-  $("#cartMask").classList.remove("open");
-}
-
-function cartCount() {
-  let n = 0;
-  state.cart.forEach((item) => (n += item.qty));
-  return n;
-}
-
-function cartTotal() {
-  let total = 0;
-  state.cart.forEach((item) => (total += item.qty * item.product.price));
-  return total;
-}
-
-function addToCart(id) {
-  const product = state.products.find((p) => p.id === id);
-  if (!product) return;
-  const entry = state.cart.get(id);
-  if (entry) {
-    entry.qty += 1;
-  } else {
-    state.cart.set(id, { product, qty: 1 });
-  }
-  renderCart();
-  openCart();
-}
-
-function changeQty(id, delta) {
-  const entry = state.cart.get(id);
-  if (!entry) return;
-  entry.qty += delta;
-  if (entry.qty <= 0) state.cart.delete(id);
-  renderCart();
-}
-
-function removeFromCart(id) {
-  state.cart.delete(id);
-  renderCart();
-}
-
-function renderCart() {
-  const box = $("#cartItems");
-  box.innerHTML = "";
-
-  if (state.cart.size === 0) {
-    box.innerHTML = `<div class="cart-empty">购物车还是空的，去挑点好物吧～</div>`;
-  } else {
-    state.cart.forEach((item, id) => {
-      const p = item.product;
-      const row = document.createElement("div");
-      row.className = "cart-item";
-      row.innerHTML = `
-        <img src="${p.image_url}" alt="${p.name}"
-             onerror="this.onerror=null;this.src=placeholderImg('${p.category}')">
-        <div class="meta">
-          <div class="name" title="${p.name}">${p.name}</div>
-          <div class="unit">${formatPrice(p.price)}</div>
-          <div class="qty-row">
-            <button class="qty-btn" data-act="minus" data-id="${id}">−</button>
-            <span class="qty-num">${item.qty}</span>
-            <button class="qty-btn" data-act="plus" data-id="${id}">+</button>
-            <button class="remove" data-act="remove" data-id="${id}">删除</button>
-          </div>
-        </div>`;
-      box.appendChild(row);
-    });
-  }
-
-  $("#navCartBadge").textContent = cartCount();
-  $("#drawerCartCount").textContent = cartCount();
-  $("#cartTotal").textContent = formatPrice(cartTotal());
-}
-
-/* ---------- 下单 ---------- */
-async function checkout() {
-  if (state.cart.size === 0) {
-    alert("购物车是空的，先添加商品再结算吧～");
-    return;
-  }
-  const items = [];
-  state.cart.forEach((item, id) => items.push({ id, qty: item.qty }));
-
-  try {
-    const res = await fetch(`${API_BASE}/orders`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        items,
-        total_price: cartTotal(),
-        receiver: { name: "", phone: "", address: "" }, // 结算表单后续补充
-      }),
-    });
-    const body = await res.json();
-    if (!res.ok) throw new Error(body.message || `HTTP ${res.status}`);
-
-    alert(`下单成功！订单号：${body.data.order_no}`);
-    state.cart.clear();
-    renderCart();
-    closeCart();
-  } catch (err) {
-    console.error("创建订单失败：", err);
-    alert("下单失败，请稍后重试");
+    console.error("加载商品失败：", err);
+    state.products = [];
+    renderProducts([]);
+    $("#sectionSub").textContent = "加载失败";
+    $("#errorState").hidden = false;
   }
 }
 
@@ -238,29 +122,40 @@ function initHero() {
   setInterval(() => show((index + 1) % slides.length), 5000);
 }
 
+/* ---------- 地址栏筛选（供详情页导航回首页使用） ---------- */
+function applyInitialFilters() {
+  const params = new URLSearchParams(window.location.search);
+  const keyword = (params.get("keyword") || "").trim();
+  const category = (params.get("category") || "").trim();
+
+  if (keyword) $("#searchInput").value = keyword;
+
+  if (category) {
+    document.querySelectorAll("#navLinks a").forEach((a) => {
+      a.classList.toggle("active", a.dataset.category === category);
+    });
+    $("#sectionTitle").textContent = category;
+  }
+
+  return { keyword, category };
+}
+
 /* ---------- 事件绑定 ---------- */
 function bindEvents() {
-  // 加入购物车（事件委托）
+  // 加购按钮直接加购；点击卡片其余区域进入独立详情页
   $("#productGrid").addEventListener("click", (e) => {
     const btn = e.target.closest(".add-btn");
-    if (btn) addToCart(Number(btn.dataset.id));
-  });
+    if (btn) {
+      const product = state.products.find((p) => p.id === Number(btn.dataset.id));
+      if (product) NovaCart.add(product, { open: true });
+      return;
+    }
 
-  // 购物车条目操作（事件委托）
-  $("#cartItems").addEventListener("click", (e) => {
-    const btn = e.target.closest("[data-act]");
-    if (!btn) return;
-    const id = Number(btn.dataset.id);
-    if (btn.dataset.act === "plus") changeQty(id, 1);
-    if (btn.dataset.act === "minus") changeQty(id, -1);
-    if (btn.dataset.act === "remove") removeFromCart(id);
+    const card = e.target.closest(".product-card[data-id]");
+    if (card) {
+      window.location.href = `detail.html?id=${encodeURIComponent(card.dataset.id)}`;
+    }
   });
-
-  // 抽屉开关
-  $("#cartOpenBtn").addEventListener("click", openCart);
-  $("#cartCloseBtn").addEventListener("click", closeCart);
-  $("#cartMask").addEventListener("click", closeCart);
-  $("#checkoutBtn").addEventListener("click", checkout);
 
   // 分类导航
   $("#navLinks").addEventListener("click", (e) => {
@@ -279,17 +174,12 @@ function bindEvents() {
       loadAndRender({ keyword: e.target.value.trim() });
     }
   });
-
-  // ESC 关闭抽屉
-  document.addEventListener("keydown", (e) => {
-    if (e.key === "Escape") closeCart();
-  });
 }
 
 /* ---------- 初始化 ---------- */
 document.addEventListener("DOMContentLoaded", () => {
   initHero();
   bindEvents();
-  renderCart();
-  loadAndRender();
+  const initialFilters = applyInitialFilters();
+  loadAndRender(initialFilters);
 });
