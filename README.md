@@ -2,7 +2,7 @@
 
 Nova 是一个前后端分离的购物网站 Demo（前端面试 + AI Agent 开发考核）。前端使用原生 HTML/CSS/JS，后端使用 Node.js + Express，数据库使用 **SQLite**。
 
-不需要安装 MySQL，不需要配置数据库密码。第一次启动后端时，会自动在 `back` 文件夹生成 `nova.sqlite`，并把 `back/init.sql` 里的 20 条商品导入进去。
+第一次启动后端时，会自动在 `back` 文件夹生成 `nova.sqlite`，并把 `back/init.sql` 里的 20 条商品导入进去。
 
 ## 技术栈
 
