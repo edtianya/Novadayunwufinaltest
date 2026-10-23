@@ -128,58 +128,6 @@ Content-Type: application/json
 
 金额由后端按数据库中的商品价格重新计算，前端传入的价格不会被信任。订单写入与库存扣减在同一事务中完成。
 
-## 常见问题
-
-### 页面显示「加载失败：无法连接服务器」
-
-说明后端没有运行，或启动后终端被关闭了。
-
-- 回到终端，确认能看到 `Nova API server running at http://localhost:3000`。
-- 如果终端已关闭，重新执行 `cd D:\Real\back` 和 `npm start`。
-- 再访问 `http://localhost:3000/api/health` 确认服务正常。
-
-### 提示 `node` 或 `npm` 不是内部或外部命令
-
-Node.js 未安装或没有加入系统 PATH。安装 Node.js 24 LTS 后，关闭终端重新打开，再执行 `node -v` 检查。
-
-### 提示 `No such built-in module: node:sqlite`
-
-Node.js 版本太旧。执行 `node -v`，如果不是 v24.x，请升级到 Node.js 24。
-
-### 端口 3000 被占用（`EADDRINUSE`）
-
-通常是有另一个旧的后端还在运行。先找到原来运行 `npm start` 的终端，按 `Ctrl + C`。
-
-如果找不到，可以在 PowerShell / CMD 中查看占用进程：
-
-```bat
-netstat -ano | findstr :3000
-```
-
-最后一列是进程 PID，再执行：
-
-```bat
-taskkill /PID 进程号 /F
-```
-
-把「进程号」替换成实际数字。只结束确认属于本项目的 Node 进程。
-
-### 提示 `Cannot find module 'express'`
-
-说明依赖没有安装，或者命令执行目录不对。确认终端位于 `D:\Real\back`，然后执行：
-
-```bash
-npm install
-npm start
-```
-
-### 商品图片显示不出来？
-
-商品图使用 Unsplash / Pexels 的 CDN 直链，需要联网加载。若个别图片加载失败，页面会显示内置的占位图标；检查网络后刷新即可。
-
-### 下单后数据会丢吗？
-
-不会。数据保存在 `back/nova.sqlite`，停止服务或重启电脑后仍然存在。只有手动删除该文件才会恢复初始状态。
 
 ## 安全与数据说明
 
