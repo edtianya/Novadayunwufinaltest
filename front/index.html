@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nova 商城 — 科技好物一站购</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- 顶部导航栏 -->
+  <header class="navbar">
+    <div class="nav-inner">
+      <a class="logo" href="#">Nova</a>
+
+      <nav class="nav-links" id="navLinks">
+        <a href="#" data-category="" class="active">全部</a>
+        <a href="#" data-category="耳机">耳机</a>
+        <a href="#" data-category="键盘">键盘</a>
+        <a href="#" data-category="台灯">台灯</a>
+        <a href="#" data-category="鼠标">鼠标</a>
+        <a href="#" data-category="音箱">音箱</a>
+      </nav>
+
+      <div class="nav-actions">
+        <div class="search-box">
+          <svg class="search-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="7"></circle>
+            <path d="M21 21l-4.35-4.35"></path>
+          </svg>
+          <input type="search" id="searchInput" placeholder="搜索商品…" autocomplete="off">
+        </div>
+
+        <button class="cart-btn" id="cartOpenBtn" aria-label="打开购物车">
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8">
+            <circle cx="9" cy="20" r="1.6"></circle>
+            <circle cx="17" cy="20" r="1.6"></circle>
+            <path d="M3 3h2l2.4 12.2a1 1 0 0 0 1 .8h7.9a1 1 0 0 0 1-.8L19 7H6"></path>
+          </svg>
+          <span class="cart-badge" id="navCartBadge">0</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- 轮播 / 推荐 Banner 占位 -->
+  <section class="hero" id="hero">
+    <div class="hero-slide active" style="--from:#1b1e28;--to:#2f4b7c;">
+      <h1>Nova Acoustic 声学系列</h1>
+      <p>主动降噪 · 45 小时续航 · 为专注而生</p>
+      <span class="hero-tag">NEW ARRIVAL</span>
+    </div>
+    <div class="hero-slide" style="--from:#171a21;--to:#3d5a45;">
+      <h1>NovaKey 机械键盘家族</h1>
+      <p>Gasket 结构 · 全键热插拔 · 麻将音手感</p>
+      <span class="hero-tag">HOT</span>
+    </div>
+    <div class="hero-slide" style="--from:#191b24;--to:#5c3a6e;">
+      <h1>NovaView 4K 视界</h1>
+      <p>27 英寸 4K IPS · 99% sRGB 高色域</p>
+      <span class="hero-tag">PRO</span>
+    </div>
+    <div class="hero-dots" id="heroDots"></div>
+  </section>
+
+  <!-- 商品列表 -->
+  <main class="container">
+    <section class="product-section">
+      <div class="section-head">
+        <h2 id="sectionTitle">为你推荐</h2>
+        <span class="section-sub" id="sectionSub">精选科技好物</span>
+      </div>
+      <div class="product-grid" id="productGrid"></div>
+      <div class="empty-state" id="emptyState" hidden>
+        <p>没有找到相关商品，换个关键词试试？</p>
+      </div>
+      <div class="error-state" id="errorState" hidden>
+        <p>无法连接服务器，请确认后端服务已启动（npm start）。</p>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <p>Nova 商城 · 前端面试考核 Demo · 数据来自 Node.js + MySQL</p>
+  </footer>
+
+  <!-- 侧拉式购物车 -->
+  <div class="cart-mask" id="cartMask"></div>
+  <aside class="cart-drawer" id="cartDrawer" aria-label="购物车">
+    <div class="cart-header">
+      <h2>购物车 <span class="cart-count" id="drawerCartCount">0</span></h2>
+      <button class="cart-close" id="cartCloseBtn" aria-label="关闭购物车">&times;</button>
+    </div>
+
+    <div class="cart-body" id="cartItems">
+      <!-- 购物车条目由 main.js 动态渲染 -->
+    </div>
+
+    <div class="cart-footer">
+      <div class="cart-total-row">
+        <span>合计</span>
+        <strong class="cart-total" id="cartTotal">¥0.00</strong>
+      </div>
+      <button class="checkout-btn" id="checkoutBtn">去结算</button>
+    </div>
+  </aside>
+
+  <script src="main.js"></script>
+</body>
+</html>

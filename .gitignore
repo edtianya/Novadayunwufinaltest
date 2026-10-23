@@ -1,0 +1,16 @@
+# 依赖目录（通过 npm install 重新生成，不提交）
+node_modules/
+
+# 日志与调试文件
+npm-debug.log*
+logs/
+*.log
+
+# 系统杂物
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# 本地环境配置（防泄密）
+.env
+.env.*
